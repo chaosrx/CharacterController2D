@@ -28,6 +28,9 @@ public class CharacterController2D : MonoBehaviour {
         CalculateRaySpacing();
         collisionState.Reset();
 
+        if(distance.y < 0) {
+            HandleSlopeDescending(ref distance);
+        }
         if (distance.x != 0) {
             HandleHorizontalCollisions(ref distance);
         }
@@ -81,7 +84,7 @@ public class CharacterController2D : MonoBehaviour {
 
         for (int i = 0; i < verticalRayCount; i++) {
             Vector2 rayOrigin = (directionY == -1) ? _raycastOrigins.bottomLeft : _raycastOrigins.topLeft;
-            rayOrigin += Vector2.right * _verticalRaySpacing * i;
+            rayOrigin += Vector2.right * (_verticalRaySpacing * i + distance.x);
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up * directionY, rayLength, collisionMask);
 
             Debug.DrawRay(rayOrigin, Vector2.up * directionY * rayLength, Color.red);
@@ -105,9 +108,33 @@ public class CharacterController2D : MonoBehaviour {
             float moveDistance = Mathf.Abs(distance.x);
             distance.y = Mathf.Sin(slopeAngle * Mathf.Deg2Rad) * moveDistance;
             distance.x = Mathf.Cos(slopeAngle * Mathf.Deg2Rad) * moveDistance * Mathf.Sign(distance.x);
+
             collisionState.climbingSlope = true;
             collisionState.slopeAngle = slopeAngle;
             collisionState.below = true;
+        }
+    }
+
+    void HandleSlopeDescending(ref Vector3 distance) {
+        float directionX = Mathf.Sign(distance.x);
+        Vector2 rayOrigin = (directionX == -1) ? _raycastOrigins.bottomRight : _raycastOrigins.bottomLeft;
+        RaycastHit2D hit = Physics2D.Raycast(rayOrigin, -Vector2.up, Mathf.Infinity, collisionMask);
+
+        if (hit) {
+            float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
+            if (slopeAngle != 0 && slopeAngle <= maxSlopeAngle) {
+                if (Mathf.Sign(hit.normal.x) == directionX) {
+                    float moveDistance = Mathf.Abs(distance.x);
+                    if (hit.distance - _skinWidth <= Mathf.Tan(slopeAngle * Mathf.Deg2Rad) * moveDistance) {
+                        distance.y -= Mathf.Sin(slopeAngle * Mathf.Deg2Rad) * moveDistance;
+                        distance.x = Mathf.Cos(slopeAngle * Mathf.Deg2Rad) * moveDistance * Mathf.Sign(distance.x);
+
+                        collisionState.descendingSlope = true;
+                        collisionState.slopeAngle = slopeAngle;
+                        collisionState.below = true;
+                    }
+                }
+            }
         }
     }
 
@@ -137,6 +164,7 @@ public class CharacterController2D : MonoBehaviour {
         public bool above, below, left, right;
 
         public bool climbingSlope;
+        public bool descendingSlope;
         public float slopeAngle;
         public float oldSlopeAngle;
 
@@ -144,6 +172,7 @@ public class CharacterController2D : MonoBehaviour {
             above = below = left = right = false;
 
             climbingSlope = false;
+            descendingSlope = false;
             oldSlopeAngle = slopeAngle;
             slopeAngle = 0;
         }
