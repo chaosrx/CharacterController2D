@@ -9,9 +9,9 @@ public class CharacterController2D : MonoBehaviour {
     [Range(2, 20)]
     public int verticalRayCount = 4;
     public LayerMask collisionMask;
+    public float maxSlopeAngle = 70.0f;
 
     private float _skinWidth = 0.015f;
-
     private float _horizontalRaySpacing;
     private float _verticalRaySpacing;
 
@@ -50,36 +50,64 @@ public class CharacterController2D : MonoBehaviour {
             Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength, Color.red);
 
             if (hit) {
-                distance.x = (hit.distance - _skinWidth) * directionX;
-                rayLength = hit.distance;
+                float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
 
-                collisionState.left = directionX == -1;
-                collisionState.right = directionX == 1;
+                if (i == 0 && slopeAngle <= maxSlopeAngle) {
+                    if (slopeAngle != collisionState.oldSlopeAngle) {
+                        float distanceToSlope = hit.distance - _skinWidth;
+                        distance.x -= distanceToSlope * directionX;
+                    }
+                    HandleSlopeClimbing(ref distance, slopeAngle);
+                }
+
+                if (!collisionState.climbingSlope || slopeAngle > maxSlopeAngle) {
+                    distance.x = (hit.distance - _skinWidth) * directionX;
+                    rayLength = hit.distance;
+
+                    if (collisionState.climbingSlope) {
+                        distance.y = Mathf.Tan(collisionState.slopeAngle * Mathf.Deg2Rad) * Mathf.Abs(distance.x);
+                    }
+
+                    collisionState.left = directionX == -1;
+                    collisionState.right = directionX == 1;
+                }
             }
         }
     }
 
-    void HandleVerticalCollisions(ref Vector3 distance)
-    {
+    void HandleVerticalCollisions(ref Vector3 distance) {
         float directionY = Mathf.Sign(distance.y);
         float rayLength = Mathf.Abs(distance.y) + _skinWidth;
 
-        for (int i = 0; i < verticalRayCount; i++)
-        {
+        for (int i = 0; i < verticalRayCount; i++) {
             Vector2 rayOrigin = (directionY == -1) ? _raycastOrigins.bottomLeft : _raycastOrigins.topLeft;
             rayOrigin += Vector2.right * _verticalRaySpacing * i;
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up * directionY, rayLength, collisionMask);
 
             Debug.DrawRay(rayOrigin, Vector2.up * directionY * rayLength, Color.red);
 
-            if (hit)
-            {
+            if (hit) {
                 distance.y = (hit.distance - _skinWidth) * directionY;
                 rayLength = hit.distance;
+
+                if (collisionState.climbingSlope) {
+                    distance.x = distance.y / Mathf.Tan(collisionState.slopeAngle * Mathf.Deg2Rad) * Mathf.Sign(distance.x);
+                }
 
                 collisionState.below = directionY == -1;
                 collisionState.above = directionY == 1;
             }
+        }
+    }
+
+    void HandleSlopeClimbing(ref Vector3 distance, float slopeAngle) {
+        if (distance.y <= 0) {
+            float moveDistance = Mathf.Abs(distance.x);
+            distance.y = Mathf.Sin(slopeAngle * Mathf.Deg2Rad) * moveDistance;
+            distance.x = Mathf.Cos(slopeAngle * Mathf.Deg2Rad) * moveDistance * Mathf.Sign(distance.x);
+            collisionState.climbingSlope = true;
+            collisionState.slopeAngle = slopeAngle;
+            collisionState.below = true;
         }
     }
 
@@ -108,8 +136,16 @@ public class CharacterController2D : MonoBehaviour {
     public struct CollisionState {
         public bool above, below, left, right;
 
+        public bool climbingSlope;
+        public float slopeAngle;
+        public float oldSlopeAngle;
+
         public void Reset() {
             above = below = left = right = false;
+
+            climbingSlope = false;
+            oldSlopeAngle = slopeAngle;
+            slopeAngle = 0;
         }
     }
 }
