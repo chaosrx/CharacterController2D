@@ -1,31 +1,18 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[RequireComponent (typeof (BoxCollider2D))]
-public class CharacterController2D : MonoBehaviour {
+public class CharacterController2D : RaycastController {
 
-    [Range (2, 20)]
-    public int horizontalRayCount = 4;
-    [Range(2, 20)]
-    public int verticalRayCount = 4;
     public LayerMask collisionMask;
     public float maxSlopeAngle = 70.0f;
-
-    private float _skinWidth = 0.015f;
-    private float _horizontalRaySpacing;
-    private float _verticalRaySpacing;
-
-    private BoxCollider2D _collider;
-    private RaycastOrigins _raycastOrigins;
     public CollisionState collisionState;
 
-    void Start () {
-        _collider = GetComponent<BoxCollider2D>();
+    protected override void Start () {
+        base.Start();
 	}
 
-    public void Move(Vector3 distance) {
+    public void Move(Vector3 distance, bool standingOnPlatform = false) {
         UpdateRaycastOrigins();
-        CalculateRaySpacing();
         collisionState.Reset();
 
         if(distance.y < 0) {
@@ -39,6 +26,11 @@ public class CharacterController2D : MonoBehaviour {
         }
 
         transform.Translate(distance);
+
+        if (standingOnPlatform) {
+            collisionState.below = true;
+        }
+
     }
 
     void HandleHorizontalCollisions(ref Vector3 distance) {
@@ -53,6 +45,10 @@ public class CharacterController2D : MonoBehaviour {
             Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength, Color.red);
 
             if (hit) {
+                if (hit.distance == 0) {
+                    continue;
+                }
+
                 float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
 
                 if (i == 0 && slopeAngle <= maxSlopeAngle) {
@@ -92,6 +88,8 @@ public class CharacterController2D : MonoBehaviour {
             if (hit) {
                 distance.y = (hit.distance - _skinWidth) * directionY;
                 rayLength = hit.distance;
+
+
 
                 if (collisionState.climbingSlope) {
                     distance.x = distance.y / Mathf.Tan(collisionState.slopeAngle * Mathf.Deg2Rad) * Mathf.Sign(distance.x);
@@ -138,28 +136,7 @@ public class CharacterController2D : MonoBehaviour {
         }
     }
 
-    void UpdateRaycastOrigins() {
-        Bounds bounds = _collider.bounds;
-        bounds.Expand(_skinWidth * -2);
-
-        _raycastOrigins.topLeft = new Vector2(bounds.min.x, bounds.max.y);
-        _raycastOrigins.topRight = new Vector2(bounds.max.x, bounds.max.y);
-        _raycastOrigins.bottomLeft = new Vector2(bounds.min.x, bounds.min.y);
-        _raycastOrigins.bottomRight = new Vector2(bounds.max.x, bounds.min.y);
-    }
-
-    void CalculateRaySpacing() {
-        Bounds bounds = _collider.bounds;
-        bounds.Expand(_skinWidth * -2);
-
-        _horizontalRaySpacing = bounds.size.x / (horizontalRayCount - 1);
-        _verticalRaySpacing = bounds.size.x / (verticalRayCount - 1);
-    }
-
-    struct RaycastOrigins {
-        public Vector2 topLeft, topRight, bottomLeft, bottomRight;
-    }
-
+   
     public struct CollisionState {
         public bool above, below, left, right;
 
