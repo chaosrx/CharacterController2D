@@ -36,7 +36,7 @@ public class RaycastController : MonoBehaviour {
         bounds.Expand(_skinWidth * -2);
 
         _horizontalRaySpacing = bounds.size.x / (horizontalRayCount - 1);
-        _verticalRaySpacing = bounds.size.x / (verticalRayCount - 1);
+        _verticalRaySpacing = bounds.size.y / (verticalRayCount - 1);
     }
 
     protected struct RaycastOrigins {

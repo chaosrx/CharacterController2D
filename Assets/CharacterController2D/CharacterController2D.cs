@@ -33,13 +33,13 @@ public class CharacterController2D : RaycastController {
 
     }
 
-    void HandleHorizontalCollisions(ref Vector3 distance) {
+    protected void HandleHorizontalCollisions(ref Vector3 distance) {
         float directionX = Mathf.Sign(distance.x);
         float rayLength = Mathf.Abs(distance.x) + _skinWidth;
 
-        for (int i = 0; i < horizontalRayCount; i++) {
+        for (int i = 0; i < verticalRayCount; i++) {
             Vector2 rayOrigin = (directionX == -1) ? _raycastOrigins.bottomLeft : _raycastOrigins.bottomRight;
-            rayOrigin += Vector2.up * (_horizontalRaySpacing * i);
+            rayOrigin += Vector2.up * (_verticalRaySpacing * i);
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * directionX, rayLength, collisionMask);
 
             Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength, Color.red);
@@ -74,13 +74,13 @@ public class CharacterController2D : RaycastController {
         }
     }
 
-    void HandleVerticalCollisions(ref Vector3 distance) {
+    protected void HandleVerticalCollisions(ref Vector3 distance) {
         float directionY = Mathf.Sign(distance.y);
         float rayLength = Mathf.Abs(distance.y) + _skinWidth;
 
-        for (int i = 0; i < verticalRayCount; i++) {
+        for (int i = 0; i < horizontalRayCount; i++) {
             Vector2 rayOrigin = (directionY == -1) ? _raycastOrigins.bottomLeft : _raycastOrigins.topLeft;
-            rayOrigin += Vector2.right * (_verticalRaySpacing * i + distance.x);
+            rayOrigin += Vector2.right * (_horizontalRaySpacing * i + distance.x);
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up * directionY, rayLength, collisionMask);
 
             Debug.DrawRay(rayOrigin, Vector2.up * directionY * rayLength, Color.red);
@@ -101,7 +101,7 @@ public class CharacterController2D : RaycastController {
         }
     }
 
-    void HandleSlopeClimbing(ref Vector3 distance, float slopeAngle) {
+    protected void HandleSlopeClimbing(ref Vector3 distance, float slopeAngle) {
         if (distance.y <= 0) {
             float moveDistance = Mathf.Abs(distance.x);
             distance.y = Mathf.Sin(slopeAngle * Mathf.Deg2Rad) * moveDistance;
@@ -113,7 +113,7 @@ public class CharacterController2D : RaycastController {
         }
     }
 
-    void HandleSlopeDescending(ref Vector3 distance) {
+    protected void HandleSlopeDescending(ref Vector3 distance) {
         float directionX = Mathf.Sign(distance.x);
         Vector2 rayOrigin = (directionX == -1) ? _raycastOrigins.bottomRight : _raycastOrigins.bottomLeft;
         RaycastHit2D hit = Physics2D.Raycast(rayOrigin, -Vector2.up, Mathf.Infinity, collisionMask);
@@ -136,7 +136,6 @@ public class CharacterController2D : RaycastController {
         }
     }
 
-   
     public struct CollisionState {
         public bool above, below, left, right;
 

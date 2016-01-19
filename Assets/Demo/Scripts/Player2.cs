@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Player : MonoBehaviour {
+public class Player2 : MonoBehaviour {
 
     public float moveSpeed = 5;
     public float jumpHeight = 2;
@@ -25,21 +25,12 @@ public class Player : MonoBehaviour {
             _velocity.y = 0;
         }
 
-        /*
-        Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-
-        if (Input.GetKeyDown(KeyCode.Space) && characterController.collisionState.below) {
-            _velocity.y = _jumpVelocity;
-        }
-        */
-
-        float inputX = Input.GetKey(KeyCode.D) ? 1f : 0f;
-        inputX = Input.GetKey(KeyCode.A) ? -1f : inputX;
+        float inputX = Input.GetKey(KeyCode.RightArrow) ? 1f : 0f;
+        inputX = Input.GetKey(KeyCode.LeftArrow) ? -1f : inputX;
 
         Vector2 input = new Vector2(inputX, 0);
 
-        if (Input.GetKeyDown(KeyCode.W) && characterController.collisionState.below)
-        {
+        if (Input.GetKeyDown(KeyCode.UpArrow) && characterController.collisionState.below) {
             _velocity.y = _jumpVelocity;
         }
 
