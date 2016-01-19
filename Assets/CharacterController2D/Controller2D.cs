@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class CharacterController2D : RaycastController {
+public class Controller2D : RaycastController {
 
     public LayerMask collisionMask;
     public float maxSlopeAngle = 70.0f;

@@ -2,7 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class MovingPlatform : PlatformController {
+[RequireComponent(typeof(PlatformController))]
+public class MovingPlatform : MonoBehaviour {
 
     public Vector3[] localWaypoints;
     protected Vector3[] globalWaypoints;
@@ -17,8 +18,10 @@ public class MovingPlatform : PlatformController {
     protected float percentBetweenWaypoints;
     protected float nextMoveTime;
 
-	protected override void Start () {
-        base.Start();
+    protected PlatformController platformController;
+
+	void Start () {
+        platformController = GetComponent<PlatformController>();
 
         globalWaypoints = new Vector3[localWaypoints.Length];
         for (int i = 0; i < localWaypoints.Length; i++) {
@@ -28,8 +31,7 @@ public class MovingPlatform : PlatformController {
 
     void Update() {
         Vector3 distance = CalculatePlatformMovement();
-
-        MovePlatform(distance);
+        platformController.MovePlatform(distance);
     }
 
     protected float Ease(float x) {

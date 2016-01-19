@@ -2,13 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class PlatformController : CharacterController2D {
+public class PlatformController : Controller2D {
 
     public LayerMask passengerMask;
 
     protected int passengerCount = 0;
 
-    // Use this for initialization
     protected override void Start () {
         base.Start();
     }
@@ -23,11 +22,9 @@ public class PlatformController : CharacterController2D {
         if (distance.y > 0) {
             MovePassengers(distance);
             Move(distance);
-            //transform.Translate(distance);
         }
         else {
             Move(distance);
-            //transform.Translate(distance);
             MovePassengers(distance);
         }
     }
@@ -59,7 +56,7 @@ public class PlatformController : CharacterController2D {
                         float moveX = (directionY == 1) ? distance.x : 0;
                         float moveY = distance.y - (hit.distance - _skinWidth) * directionY;
 
-                        hit.transform.GetComponent<CharacterController2D>().Move(new Vector3(moveX, moveY), true);
+                        hit.transform.GetComponent<Controller2D>().Move(new Vector3(moveX, moveY), true);
                     }
                 }
             }
@@ -85,7 +82,7 @@ public class PlatformController : CharacterController2D {
                         float moveX = distance.x - (hit.distance - _skinWidth) * directionX;
                         float moveY = 0;
 
-                        hit.transform.GetComponent<CharacterController2D>().Move(new Vector3(moveX, moveY), true);
+                        hit.transform.GetComponent<Controller2D>().Move(new Vector3(moveX, moveY), true);
                     }
                 }
             }
@@ -110,7 +107,7 @@ public class PlatformController : CharacterController2D {
                         float moveX = distance.x;
                         float moveY = distance.y;
 
-                        hit.transform.GetComponent<CharacterController2D>().Move(new Vector3(moveX, moveY), true);
+                        hit.transform.GetComponent<Controller2D>().Move(new Vector3(moveX, moveY), true);
                     }
                 }
             }

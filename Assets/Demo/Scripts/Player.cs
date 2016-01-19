@@ -11,10 +11,10 @@ public class Player : MonoBehaviour {
     private float _gravity;
     private Vector3 _velocity;
 
-    private CharacterController2D characterController;
+    private Controller2D characterController;
 
 	void Start () {
-        characterController = GetComponent<CharacterController2D>();
+        characterController = GetComponent<Controller2D>();
 
         _gravity = -(2 * jumpHeight) / Mathf.Pow(jumpTime, 2);
         _jumpVelocity = Mathf.Abs(_gravity) * jumpTime;
@@ -25,21 +25,9 @@ public class Player : MonoBehaviour {
             _velocity.y = 0;
         }
 
-        /*
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
         if (Input.GetKeyDown(KeyCode.Space) && characterController.collisionState.below) {
-            _velocity.y = _jumpVelocity;
-        }
-        */
-
-        float inputX = Input.GetKey(KeyCode.D) ? 1f : 0f;
-        inputX = Input.GetKey(KeyCode.A) ? -1f : inputX;
-
-        Vector2 input = new Vector2(inputX, 0);
-
-        if (Input.GetKeyDown(KeyCode.W) && characterController.collisionState.below)
-        {
             _velocity.y = _jumpVelocity;
         }
 
